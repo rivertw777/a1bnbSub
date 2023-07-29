@@ -36,7 +36,7 @@ class uploadImageList(APIView):
            return Response(serializer.data, status=status.HTTP_201_CREATED)
        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# 이미지 저장 함수 
+# 이미지 저장 함수 ./media/images
 def save_image(image):
     upload_dir = 'images'
     if not os.path.exists(upload_dir):
@@ -51,7 +51,7 @@ def save_image(image):
 
     return saved_path
 
-# bbox 그려주는 함수
+# (detection) bbox 그려주는 함수
 def draw_bbox(detect_json, image_nums):
     img_dir = "./media/images"
     for img_file, bbox in detect_json.items():
