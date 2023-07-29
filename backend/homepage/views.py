@@ -12,6 +12,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny
 from .serializers import PostSerializer, PhotoSerializer, mainpageSerializer
 
+from PIL import Image, ImageDraw
+
 # Create your views here.
 class mainpageView(viewsets.ModelViewSet):
     serializer_class= mainpageSerializer
@@ -36,72 +38,77 @@ class uploadImageList(APIView):
 
 # 이미지 저장 함수 
 def save_image(image):
-    # 이미지 파일을 저장할 디렉토리를 지정합니다.
     upload_dir = 'images'
-    # if not os.path.exists(upload_dir): # 항상 새로 시작 (이전 데이터 삭제)
-    #     os.makedirs(upload_dir)
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
 
-    # 이미지 파일의 확장자를 추출합니다.
     filename, ext = os.path.splitext(image.name)
 
-    # 저장될 파일의 경로를 생성합니다.
     saved_path = os.path.join(upload_dir, f"{filename}{ext}")
 
-    # 파일을 저장합니다.
     fs = FileSystemStorage()
     fs.save(saved_path, image)
 
     return saved_path
+
+# bbox 그려주는 함수
+def draw_bbox(detect_json, image_nums):
+    img_dir = "./media/images"
+    for img_file, bbox in detect_json.items():
+        img_path = os.path.join(img_dir, img_file)
+
+        image = Image.open(img_path)
+        draw = ImageDraw.Draw(image)
+
+        for bbox_label, bbox_values in bbox.items():
+            x1, y1, x2, y2, _ = bbox_values
+            draw.rectangle([x1, y1, x2, y2], outline='red', width=4)
+        
+        output_path = os.path.join(img_dir, "bbox_" + img_file)
+        image.save(output_path)
     
 # /upload POST 요청 시 호출 
-# 이미지를 fast-api 로 post 한다
+# 이미지를 fast-api 로 post
 @api_view(['post'])
 def upload_images(request):
-    # image data 를 media/images 폴더 안에 저장 
-    # image 한 장에 대해 
-    # serializer= mainpageSerializer(
-    #             data= request.data, many= True)
-    # if serializer.is_valid():
-    #     serializer.save()
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-    # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # image_file= request.FILES['images']
-    # test= request.POST['text']
-    
-    serverUrl="http://127.0.0.1:9596/upload" # fast-api 테스트용 임시 url # fast-api 실행: uvicorn main:app --port 9596 --reload
-    
+    # URL 
+    serverUrl="http://127.0.0.1:9596/upload"
+    detect_Url="http://127.0.0.1:9596/dl/detection"
+    classification_Url="http://127.0.0.1:9596/dl/classification"
+    textgen_Url="http://127.0.0.1:9596/dl/generation"
+
     if request.FILES.getlist("images"):
         # fast-api post 요청 부분
-        images = request.FILES.getlist("images")
-        files = [('images', img) for img in images]
-        response = requests.post(serverUrl, files=files)
-        
-        saved_image_paths = []
+        fast_api_images = request.FILES.getlist("images")
+        file = [('images', img) for img in fast_api_images]    
         
         # upload_dir = 'images'
         # if os.path.exists(upload_dir): # 항상 새로 시작 (이전 데이터 삭제)
-        #     shutil.rmtree(upload_dir)
-        
-        for image in images:
-            # 이미지를 저장하고 저장된 파일 경로를 리스트에 추가
-            saved_path = save_image(image)
-            saved_image_paths.append(saved_path)
+        #     shutil.rmtree(upload_dir     
         
         # fast api 각각 3번 호출 
         # detection fast api 호출 
-        detecServerUrl="http://127.0.0.1:9596/dl/detection"
-        result_detect= requests.post(detecServerUrl, files=files)
+        result_detect= requests.post(detect_Url, files=file)
         # 이미지 박스 쳐서 그림
         
-        # classification fast api 호출 
-        classiServerUrl="http://127.0.0.1:9596/dl/classification"
-        result_classi= requests.post(classiServerUrl, files=files)
+        # # classification fast api 호출 
+        # result_classification= requests.post(classification_Url, files=files)
+
         # text generation fast api 호출 
-        textServerUrl="http://127.0.0.1:9596/dl/generation"
-        result_text= requests.post(textServerUrl, files=files)
-        
-        print(result_detect.json(), result_classi.json(), result_text.json())
-        return JsonResponse ({"detect_result": result_detect.json(), "classi_result": result_classi.json(), "text_result": result_text.json()})
+        # result_textgen= requests.post(textgen_Url, files=files)
+
+        # 이미지 저장
+        saved_image_paths = []
+        for image in fast_api_images:
+            saved_path = save_image(image)
+            saved_image_paths.append(saved_path)
+
+        # media/images에 저장된 이미지 위에 bbox그려서 다시 저장
+        detect_json = result_detect.json()
+        draw_bbox(detect_json, len(file))
+
+
+        return JsonResponse ({"detect_result": result_detect.json()})
         # return JsonResponse({'result': "success", 'saved_paths': saved_image_paths}, status=200)
         # return JsonResponse({'result': "success", 'result_detect': result_detect, 'result_classi': result_classi, 'result_text': result_text}, status=200)
     
