@@ -1,9 +1,8 @@
 // 호스트 숙소 등록 화면 
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import Image from 'react-bootstrap/Image'
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 // const serverUrl='http://127.0.0.1:8000/mainpage'
 const serverUrl= 'upload/'
@@ -40,9 +39,6 @@ axios.defaults.xsrfHeaderName = "X-CSRFToken";
 const BecomeHost = () => {
     const [previewImg, setPreviewImg]= useState([]); // image url
     const [name, setName]= useState([]); // image file name
-    const [modelResult, setModelResult]= useState([]);
-    const navigate = useNavigate(); // ammenities.js 로 데이터 전달 위해 
-
     // 이미지 업로드 하는 함수 
     const insertImg =(e) =>{
         console.log((e.target.files))
@@ -110,7 +106,7 @@ const BecomeHost = () => {
                     <>
                         <Image 
                         src= {previewImg[index]}
-                        style={{maxWidth:"400px"}}>
+                        style={{maxWidth:"300px"}}>
 
                         </Image>
                         <p>{name[index]}</p>
@@ -121,8 +117,7 @@ const BecomeHost = () => {
         }
     };
     // 서버로 데이터 전송하는 함수 
-    async function uploadData(){
-    // const uploadData = () => {
+    const uploadData = () => {
         const formData= new FormData();
         // 이미지 한 장 전송 
         // formData.append('text', name[0])
@@ -166,8 +161,6 @@ const BecomeHost = () => {
         if (previewImg){
             console.log("숙소 업로드"); // test 
             console.log(previewImg); // test 
-            // navigate("/become-host/ammenities", {state: { name: {name}, images: {previewImg}}}) // 데이터 전달
-
             // POST 요청 
             axios({
                 method: "POST",
@@ -175,23 +168,18 @@ const BecomeHost = () => {
                 mode: "cors",
                 // data: previewImg,
                 data: formData,
-                // headers: {'content-type': 'multipart/form-data'}
+                headers: {'content-type': 'multipart/form-data'}
             })
-            .then(response =>{
-                // console.log(response.data['detect_result']['result']['post_1']);
-                console.log(response.data);
-                let tmp= response.data.detect_result.result.post_1;
-                console.log(tmp);
-                setModelResult(tmp);
-                console.log(modelResult.length);
-                alert("!");
-                // alert(response.data["detect_result"]) // test 
+            .then((e) =>{
+                // e.preventDefault();
+                console.log(e)
+                alert(e['status']) // test 
             })
             .catch((err)=>{ console.log(err)})
             alert("성공!") // test 
-            navigate("/become-host/ammenities", {state: {value: modelResult}});
-        } 
-    }
+        }
+    } 
+    
     return (
       <div>
         <h1 style={{textAlign:'center'}}>호스트 숙소 게시글 화면</h1>
