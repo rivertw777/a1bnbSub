@@ -2,10 +2,10 @@
 import { Container } from 'react-bootstrap';
 
 const Footer = () => {
-  return(
+  return (
     <footer>
       <Container>
-        <div style={{textAlign:'center'}}>
+        <div style={{ textAlign: 'center' }}>
           Footer
         </div>
       </Container>

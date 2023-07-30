@@ -16,7 +16,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # 리액트 폴더 
-REACT_DIR= Path(__file__).resolve().parent.parent.parent / 'react-app'
+REACT_DIR= Path(__file__).resolve().parent.parent.parent / 'frontend'
 
 
 # Quick-start development settings - unsuitable for production
@@ -79,7 +79,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [# 리액트 템플릿 
-                 os.path.join(REACT_DIR, 'router-tutorial', 'build')],
+                 os.path.join(REACT_DIR, 'build')],
         # 'mysite/templates/mysite/',
         'APP_DIRS': True,
         'OPTIONS': {
@@ -146,7 +146,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [ # 리액트 템플릿 
-                    os.path.join(REACT_DIR, 'router-tutorial', 'build', 'static')]
+                    os.path.join(REACT_DIR, 'build', 'static')]
 # 'mysite/static/css/',
 # upload image save
 MEDIA_URL = '/media/'

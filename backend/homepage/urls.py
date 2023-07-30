@@ -12,7 +12,7 @@ urlpatterns =[
     path('upload/', upload_images), # /become-host 에서 post 요청 올 때 호출 
     path('get/ammenities/', get_ammenities), # /become-host/ammenities에서 get 요청 올 때 호출
 
-    # api 확인
+    # 게시물 api
     path('api/', include(router.urls)),
 ]
 

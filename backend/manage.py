@@ -20,9 +20,8 @@ def main():
     # add
     try: # 리액트 
         if sys.argv[2] == 'react':
-            react_root = Path(__file__).resolve().parent.parent / 'react-app'
+            react_root = Path(__file__).resolve().parent.parent / 'frontend'
             project_root= os.getcwd()
-            os.chdir(os.path.join(react_root, "router-tutorial"))
             os.system("npm run build")
             # os.system("yarn build")
             os.chdir(project_root)
